@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -24,10 +28,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
+  min-width: 100vw;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -67,11 +71,15 @@ button:focus-visible {
   }
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Estilos para asegurar que las páginas ocupen toda la pantalla */
+#root {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
 
-/* 4ec56cdfe1cd49d6a4c0726ee48d663a */
-
+/* Importaciones de slick carousel si las necesitas */
 @import "~slick-carousel/slick/slick.css";
 @import "~slick-carousel/slick/slick-theme.css";

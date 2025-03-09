@@ -1,35 +1,32 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+"use client"
 
-const API_KEY = "4ec56cdfe1cd49d6a4c0726ee48d663a";
-const BASE_URL = "https://api.rawg.io/api/games";
+import { useEffect, useState } from "react"
+import { useParams, Link } from "react-router-dom"
+import { getGameDetails } from "../services/api"
 
 function GameDetails() {
-  const { id } = useParams();
-  const [game, setGame] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { id } = useParams()
+  const [game, setGame] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function fetchGameDetails() {
       try {
-        const response = await fetch(`${BASE_URL}/${id}?key=${API_KEY}`);
-        if (!response.ok) throw new Error("No se pudo obtener el juego");
-        
-        const data = await response.json();
-        setGame(data);
+        const data = await getGameDetails(id)
+        setGame(data)
       } catch (err) {
-        setError(err.message);
+        setError(err.message)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
 
-    fetchGameDetails();
-  }, [id]);
+    fetchGameDetails()
+  }, [id])
 
-  if (loading) return <p className="text-center text-lg text-white">Cargando...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (loading) return <p className="text-center text-lg text-white">Cargando...</p>
+  if (error) return <p className="text-center text-red-500">{error}</p>
 
   return (
     <div className="bg-gradient-to-r from-amber-300 to-green-400 min-h-screen">
@@ -38,13 +35,20 @@ function GameDetails() {
           {/* Título */}
           <div className="bg-gray-900 text-white p-6 text-center">
             <h1 className="text-4xl font-extrabold">{game.name}</h1>
-            <p className="text-lg mt-2">{game.genres.map(g => g.name).join(", ")}</p>
+            <p className="text-lg mt-2">
+              {game.genres.map((g, index) => (
+                <Link key={g.id} to={`/genres/${g.id}`} className="inline-block mx-1 hover:underline">
+                  {g.name}
+                  {index < game.genres.length - 1 ? "," : ""}
+                </Link>
+              ))}
+            </p>
           </div>
 
           {/* Imagen del juego */}
           <div className="relative">
             <img
-              src={game.background_image}
+              src={game.background_image || "/placeholder.svg"}
               alt={game.name}
               className="w-full h-96 object-cover shadow-lg transition-transform"
             />
@@ -61,31 +65,70 @@ function GameDetails() {
 
           {/* Detalles del juego */}
           <div className="p-6 mt-4 bg-gray-50 rounded-lg shadow-inner">
-            <div className="flex flex-wrap justify-between text-gray-800">
-              <div className="w-full sm:w-1/2 mb-4 sm:mb-0">
-                <p><strong>📅 Fecha de lanzamiento:</strong> {game.released}</p>
-                <p><strong>🕹️ Plataformas:</strong> {game.platforms.map(p => p.platform.name).join(", ")}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800">
+              <div>
+                <p className="mb-2">
+                  <strong>📅 Fecha de lanzamiento:</strong> {game.released}
+                </p>
+                <p className="mb-2">
+                  <strong>🕹️ Plataformas:</strong> {game.platforms.map((p) => p.platform.name).join(", ")}
+                </p>
+                <p className="mb-2">
+                  <strong>⭐ Puntuación:</strong> {game.rating} / 5
+                </p>
               </div>
-              <div className="w-full sm:w-1/2">
-                <p><strong>⭐ Puntuación:</strong> {game.rating} / 5</p>
-                <p><strong>🎮 Géneros:</strong> {game.genres.map(g => g.name).join(", ")}</p>
+              <div>
+                <p className="mb-2">
+                  <strong>🎮 Géneros:</strong> {game.genres.map((g) => g.name).join(", ")}
+                </p>
+
+                {/* Publisher con enlace */}
+                <p className="mb-2">
+                  <strong>🏢 Publisher:</strong>{" "}
+                  {game.publishers && game.publishers.length > 0
+                    ? game.publishers.map((publisher, index) => (
+                        <span key={publisher.id}>
+                          <Link to={`/publishers/${publisher.id}`} className="text-green-600 hover:underline">
+                            {publisher.name}
+                          </Link>
+                          {index < game.publishers.length - 1 ? ", " : ""}
+                        </span>
+                      ))
+                    : "No disponible"}
+                </p>
+
+                {/* Tags con enlaces */}
+                <p className="mb-2">
+                  <strong>🏷️ Tags:</strong>{" "}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {game.tags && game.tags.length > 0
+                      ? game.tags.map((tag) => (
+                          <Link
+                            key={tag.id}
+                            to={`/tags/${tag.id}`}
+                            className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm hover:bg-green-200"
+                          >
+                            {tag.name}
+                          </Link>
+                        ))
+                      : "No disponible"}
+                  </div>
+                </p>
               </div>
             </div>
           </div>
 
           {/* Botón de Volver */}
           <div className="text-center my-6">
-            <Link
-              to="/"
-              className="bg-white text-white py-2 px-6 rounded-lg hover:bg-black transition"
-            >
+            <Link to="/" className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition">
               Volver a la Página Principal
             </Link>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default GameDetails;
+export default GameDetails
+

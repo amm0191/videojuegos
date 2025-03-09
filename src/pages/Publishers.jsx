@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import debounce from "lodash.debounce"
-import { getGames } from "../services/api"
+import { getPublishers } from "../services/api"
 import Pagination from "../components/Pagination"
 
-function Games() {
+function Publishers() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [games, setGames] = useState([])
+  const [publishers, setPublishers] = useState([])
   const [search, setSearch] = useState(searchParams.get("search") || "")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -16,12 +16,12 @@ function Games() {
   const [totalPages, setTotalPages] = useState(1)
   const pageSize = 20
 
-  // Función para buscar la API
-  const fetchGames = async (query = "", page = 1) => {
+  // Función para buscar publishers
+  const fetchPublishers = async (query = "", page = 1) => {
     setLoading(true)
     try {
-      const data = await getGames(page, pageSize, query)
-      setGames(data.results)
+      const data = await getPublishers(page, pageSize, query)
+      setPublishers(data.results)
       setTotalPages(Math.ceil(data.count / pageSize))
     } catch (err) {
       setError(err.message)
@@ -34,7 +34,7 @@ function Games() {
   const debouncedSearch = debounce((query) => {
     setCurrentPage(1)
     setSearchParams({ search: query, page: "1" })
-    fetchGames(query, 1)
+    fetchPublishers(query, 1)
   }, 500)
 
   // Maneja el cambio en el campo de búsqueda
@@ -52,17 +52,17 @@ function Games() {
   const handlePageChange = (page) => {
     setCurrentPage(page)
     setSearchParams({ search, page: page.toString() })
-    fetchGames(search, page)
+    fetchPublishers(search, page)
     window.scrollTo(0, 0)
   }
 
-  // Carga juegos cuando cambia la página o la búsqueda en la URL
+  // Carga publishers cuando cambia la página o la búsqueda en la URL
   useEffect(() => {
     const page = Number.parseInt(searchParams.get("page") || "1")
     const searchQuery = searchParams.get("search") || ""
     setCurrentPage(page)
     setSearch(searchQuery)
-    fetchGames(searchQuery, page)
+    fetchPublishers(searchQuery, page)
   }, [searchParams])
 
   // Mensaje de error o de carga
@@ -72,38 +72,55 @@ function Games() {
   return (
     <div className="bg-gradient-to-r from-amber-300 to-green-400 min-h-screen text-white">
       <div className="container mx-auto p-6">
-        <h1 className="text-5xl font-extrabold text-center mb-10 drop-shadow-lg">¡Explora los mejores videojuegos!</h1>
+        <h1 className="text-5xl font-extrabold text-center mb-10 drop-shadow-lg">
+          Explora las mejores compañías de videojuegos
+        </h1>
+
+        <div className="mb-8 text-center">
+          <Link
+            to="/"
+            className="inline-block bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            ← Volver a la página principal
+          </Link>
+        </div>
 
         {/* Campo de búsqueda */}
         <form onSubmit={handleSubmit} className="flex justify-center mb-10">
           <input
             type="text"
-            placeholder="Busca tu juego favorito..."
+            placeholder="Busca una compañía..."
             value={search}
             onChange={handleSearchChange}
             className="w-full sm:w-80 p-4 text-lg rounded-full focus:outline-none focus:ring-2 focus:ring-green-400 bg-white text-gray-800 placeholder-gray-500 shadow-xl"
           />
         </form>
 
-        {/* Lista de juegos */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
-          {games.length === 0 ? (
-            <p className="text-center text-xl text-gray-300 col-span-full">No se encontraron juegos.</p>
+        {/* Lista de publishers */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+          {publishers.length === 0 ? (
+            <p className="text-center text-xl text-gray-300 col-span-full">No se encontraron compañías.</p>
           ) : (
-            games.map((game) => (
+            publishers.map((publisher) => (
               <Link
-                key={game.id}
-                to={`/games/${game.id}`}
+                key={publisher.id}
+                to={`/publishers/${publisher.id}`}
                 className="block bg-white overflow-hidden shadow-2xl transform hover:scale-105 transition duration-300 border-solid border-3 border-black rounded-lg"
               >
-                <img
-                  src={game.background_image || "/placeholder.svg"}
-                  alt={game.name}
-                  className="w-full h-48 object-cover"
-                />
+                <div className="h-48 bg-gray-200 flex items-center justify-center">
+                  {publisher.image_background ? (
+                    <img
+                      src={publisher.image_background || "/placeholder.svg"}
+                      alt={publisher.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-4xl text-gray-400">🏢</div>
+                  )}
+                </div>
                 <div className="p-4">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">{game.name}</h2>
-                  <p className="text-lg text-gray-600">⭐ {game.rating} / 5</p>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">{publisher.name}</h2>
+                  <p className="text-sm text-gray-600">{publisher.games_count} juegos publicados</p>
                 </div>
               </Link>
             ))
@@ -111,7 +128,7 @@ function Games() {
         </div>
 
         {/* Paginación */}
-        {games.length > 0 && (
+        {publishers.length > 0 && (
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         )}
       </div>
@@ -119,5 +136,5 @@ function Games() {
   )
 }
 
-export default Games
+export default Publishers
 
